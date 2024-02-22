@@ -7,9 +7,6 @@ class Individual(object):
         self.total_weight = 0        
         self.features = [] #vetor de decisão
 
-    # Função que avalia se um indivíduo é melhor que outro
-    # def dominates(self, other_individual):
-    #     condition = False
     #     if self.direction == "MAX":
     #         if self.objective > other_individual.objective:
     #             condition = True
