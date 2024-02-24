@@ -38,7 +38,7 @@ class IDLHC:
         # Cria população inicial
         self.population = self.problem.create_initial_population()
 
-        print("Progresso:")
+        print("         ")
         for i in range(self.problem.num_of_generations):
             print(str(i)+"%",end="\r")
 

@@ -69,7 +69,7 @@ class Problem:
                 for n in range(self.num_of_variables-1):
                     individual.features.append( r*individual.features[n]*(1-individual.features[n]) )
                 self.current_value = individual.features[-1]
-                individual.features = [0 if i < 0.3 else 1 for i in individual.features]
+                individual.features = [0 if i < 0.5 else 1 for i in individual.features]
                 return individual
             return logistic_map_generation(self)
         

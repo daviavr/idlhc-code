@@ -70,7 +70,8 @@ def gen_test_cases(
 ):
     instances_path = "knapsack/instances/"
     tests_path = "knapsack/tests"
-    knapsack_instances = ["num_1|size_200.csv"]
+    knapsack_instances = listdir(Path(instances_path))
+    #knapsack_instances = ["num_0|size_100.csv"]
 
     for current_instance in knapsack_instances:
         knapsack_instances_data = pd.read_csv(Path(instances_path + current_instance))
