@@ -5,7 +5,22 @@ from pathlib import Path
 from os import listdir
 from common.helper import file_name_parser
 import numpy as np
+import sys
 
+
+def plot_histogram(avg,std,data):
+    #data = np.random.randn(100) 
+    plt.hist(data, bins=20, alpha=0.7, color='blue', edgecolor='black', label='Melhores Valores')  # Example histogram plot
+
+    plt.axvline(avg, color='red', linestyle='dashed', linewidth=2, label='Media')
+    plt.axvline(avg + std, color='green', linestyle='dashed', linewidth=2, label=f'Media + 1 std' )
+    plt.axvline(avg - std, color='purple', linestyle='dashed', linewidth=2, label=f'Media - 1 std')
+
+    plt.legend()
+    plt.title(f'Dados com Media e Desvio padrão de {std:.2f}')
+    plt.xlabel('Valor')
+    plt.ylabel('Frequencia')
+    plt.show()
 
 def plot_convergence(elements):
     arr1 = elements[0]
@@ -20,31 +35,33 @@ def plot_convergence(elements):
     x_axis = [i for i in range(len(arr1))]
 
     ax.plot(
-        x_axis, arr1, marker="o", color="blue", linestyle="", markersize=3, alpha=0.5
+        x_axis, arr1, marker="o", color="none", markeredgecolor="blue",linestyle="", markersize=3, alpha=0.5
     )
     ax.plot(
         x_axis, arr2, marker="o", color="red", linestyle="", markersize=3, alpha=0.5
     )
     ax.plot(
-        x_axis, arr3, marker="o", color="green", linestyle="", markersize=3, alpha=0.5
+        x_axis, arr3, marker="s", color="green", linestyle="", markersize=3, alpha=0.5
     )
     legends = [
-        Patch(facecolor="blue", label="pGenType_0"),
-        Patch(facecolor="red", label="pGenType_1"),
-        Patch(facecolor="green", label="pGenType_2"),
+        Patch(facecolor="blue", label="aleatório"),
+        Patch(facecolor="red", label="mapa logistico 1"),
+        Patch(facecolor="green", label="mapa logistico 2"),
     ]
     ax.legend(handles=legends)
-    ax.text(13,12000,"media|media|media\ndesvio|desvio|desvio",fontsize=10)
+    #ax.text(13,12000,"media|media|media\ndesvio|desvio|desvio",fontsize=10)
 
     plt.xticks(fontsize=10)
     plt.yticks(fontsize=10)
+    
+    plt.title(f'Media dos valores por geração')
     plt.ylabel("Valor da função objetivo", fontsize=10)
     plt.xlabel("Gerações", fontsize=10)
-    plt.xlim((-0.5, 20.5))
+    #plt.xlim((-0.5, 24.5))
+    plt.show()
     # plt.legend()
 
     # plota o gráfico
-    plt.show()
 
 
 def get_first_best_value(convergence_array):
@@ -56,7 +73,6 @@ def get_first_best_value(convergence_array):
 
 def get_best_values_metrics(df: pd.DataFrame):
     ammount_of_rows, ammount_of_columns = df.shape
-    total_sum = 0
     best_values = []
 
     for current_column_header in df.columns:
@@ -65,17 +81,16 @@ def get_best_values_metrics(df: pd.DataFrame):
         )
         # print("best_value: ", first_best_value ,"index: ",index_first_best_value)
         best_values.append(first_best_value)
-        total_sum += first_best_value
     #print(best_values)
 
-    return total_sum / ammount_of_columns, np.std(best_values)
+    return np.mean(best_values), np.std(best_values), best_values
 
 
 def get_averages_per_generation(df: pd.DataFrame):
     averages_per_generation = []
     for row in df.iloc:
         # print("avg: ", sum(row)/len(row), "sum: ", sum(row), "len: ", len(row))
-        avg = sum(row) / len(row)
+        avg = np.mean(row)
         averages_per_generation.append(avg)
     return averages_per_generation
 
@@ -86,7 +101,9 @@ def get_data(current_test=0):
 
     averages = [0, 0, 0]
     standard_deviations = [0, 0, 0]
+    best_values = [0,0,0]
     averages_per_generation = [0, 0, 0]
+
 
     for current_gent_type_path in gen_type_path_list:
         test_full_path = (
@@ -103,6 +120,7 @@ def get_data(current_test=0):
         (
             averages[gen_type_num],
             standard_deviations[gen_type_num],
+            best_values[gen_type_num],
         ) = get_best_values_metrics(test_instance_df)
         averages_per_generation[gen_type_num] = get_averages_per_generation(
             test_instance_df
@@ -110,7 +128,9 @@ def get_data(current_test=0):
 
     print(averages)
     print(standard_deviations)
+    for gen_test in range(3):
+        plot_histogram(averages[gen_test],standard_deviations[gen_test],best_values[gen_test])
     plot_convergence(averages_per_generation)
 
-
-get_data(current_test=9)
+test_num = sys.argv[1]
+get_data(current_test=test_num)
