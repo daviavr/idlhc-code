@@ -8,18 +8,24 @@ import numpy as np
 import sys
 
 
-def plot_histogram(avg,std,data):
-    #data = np.random.randn(100) 
-    plt.hist(data, bins=20, alpha=0.7, color='blue', edgecolor='black', label='Melhores Valores')  # Example histogram plot
+def plot_boxblot(data):
+    names, xs = [],[]
+    for gen_type, data_element in enumerate(data):
+        names.append(f"Tipo de Geração {gen_type}")
+        xs.append([np.random.normal(gen_type + 1, 0.04) for i in range(len(data_element))])
+    
+    plt.boxplot(data,labels=names)
+    for x,y in zip(xs,data):
+        plt.scatter(x,y,alpha=0.4)  
 
-    plt.axvline(avg, color='red', linestyle='dashed', linewidth=2, label='Media')
-    plt.axvline(avg + std, color='green', linestyle='dashed', linewidth=2, label=f'Media + 1 std' )
-    plt.axvline(avg - std, color='purple', linestyle='dashed', linewidth=2, label=f'Media - 1 std')
+    #plt.axvline(avg, color='red', linestyle='dashed', linewidth=2, label='Media')
+    #plt.axvline(avg + std, color='green', linestyle='dashed', linewidth=2, label=f'Media + 1 std' )
+    #plt.axvline(avg - std, color='purple', linestyle='dashed', linewidth=2, label=f'Media - 1 std')
 
-    plt.legend()
-    plt.title(f'Dados com Media e Desvio padrão de {std:.2f}')
-    plt.xlabel('Valor')
-    plt.ylabel('Frequencia')
+    #plt.legend()
+    #axs.title(f'Dados com Media e Desvio padrão de {std:.2f}')
+    #axs.xlabel('Valor')
+    #axs.ylabel('Frequencia')
     plt.show()
 
 def plot_convergence(elements):
@@ -99,12 +105,9 @@ def get_data(current_test=0):
     folder_path = "knapsack/tests/"
     gen_type_path_list = listdir(Path(folder_path))
 
-    averages = [0, 0, 0]
-    standard_deviations = [0, 0, 0]
-    best_values = [0,0,0]
-    averages_per_generation = [0, 0, 0]
+    ammount_gen_types = len(gen_type_path_list)
 
-
+    averages, standard_deviations, best_values, averages_per_generation = [[0 for n in range(ammount_gen_types)] for i in range(4)]    
     for current_gent_type_path in gen_type_path_list:
         test_full_path = (
             folder_path
@@ -128,8 +131,7 @@ def get_data(current_test=0):
 
     print(averages)
     print(standard_deviations)
-    for gen_test in range(3):
-        plot_histogram(averages[gen_test],standard_deviations[gen_test],best_values[gen_test])
+    plot_boxblot(best_values)
     plot_convergence(averages_per_generation)
 
 test_num = sys.argv[1]
