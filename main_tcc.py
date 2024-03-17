@@ -90,7 +90,7 @@ def gen_test_cases(
             num_of_individuals=num_of_individuals,
             num_of_generations=generations,
             objective=[knapsack.bench],
-            repair=[knapsack.repair],
+            repair=[lambda a: None],
             mutation=(1 / num_of_variables),
             variables_range=[0, 1],
             direction=direction,
