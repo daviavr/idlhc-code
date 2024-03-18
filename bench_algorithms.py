@@ -56,7 +56,7 @@ class UnconstrainedKnapsack:
     minimum_size = 100
     min_item_value = int( -1 * math.ceil(1.6 * minimum_size))
     max_item_value = int(math.ceil(1.6 * minimum_size))
-    min_weight_value = int(-1 * math.ceil(1.6 * minimum_size))
+    min_weight_value = 1
     max_weight_value = int(math.ceil(1.6 * minimum_size))
 
     def __init__(self, values, weights):

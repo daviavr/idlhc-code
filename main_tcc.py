@@ -1,6 +1,6 @@
 from common.problem import Problem
 from algorithm.idlhc import IDLHC
-from bench_algorithms import Knapsack
+from bench_algorithms import *
 import random
 import pandas as pd
 from pathlib import Path
@@ -35,11 +35,11 @@ def capture_test_data(iteration: IDLHC, problem: Problem, instance_num: int):
     population_gen_type = problem.initial_population_type
     best_individuals = iteration.best_individuals
 
-    folder_path = "knapsack/tests/population-gen-type_{population_gen_type}/".format(
+    folder_path = "unconstrained_knapsack/tests/population-gen-type_{population_gen_type}/".format(
         population_gen_type=population_gen_type,
     )
 
-    file_path = "knapsack-instance_{instance_num}.csv".format(
+    file_path = "unconstrained-knapsack-instance_{instance_num}.csv".format(
         instance_num=instance_num, population_gen_type=population_gen_type
     )
     file_path = folder_path + file_path
@@ -68,8 +68,8 @@ def gen_test_cases(
     num_pdf=20,
     num_cut_pdf=0.1,
 ):
-    instances_path = "knapsack/instances/"
-    tests_path = "knapsack/tests"
+    instances_path = "unconstrained_knapsack/instances/"
+    tests_path = "unconstrained_knapsack/tests"
     knapsack_instances = listdir(Path(instances_path))
     #knapsack_instances = ["num_0|size_100.csv"]
 
@@ -81,7 +81,7 @@ def gen_test_cases(
         values = list(knapsack_instances_data["values"])
         weights = list(knapsack_instances_data["weights"])
 
-        knapsack = Knapsack(values, weights)
+        knapsack = UnconstrainedKnapsack(values, weights)
 
         num_of_variables = current_instance_info["size"]
 
@@ -90,7 +90,7 @@ def gen_test_cases(
             num_of_individuals=num_of_individuals,
             num_of_generations=generations,
             objective=[knapsack.bench],
-            repair=[lambda a: None],
+            repair=[knapsack.repair],
             mutation=(1 / num_of_variables),
             variables_range=[0, 1],
             direction=direction,
