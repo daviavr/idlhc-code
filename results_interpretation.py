@@ -1,77 +1,138 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 from pathlib import Path
+from os import listdir
+from common.helper import file_name_parser
+import numpy as np
+import sys
 
-def plot_convergence(arr1,arr2,arr3):
+
+def plot_boxblot(data):
+    names, xs = [],[]
+    for gen_type, data_element in enumerate(data):
+        names.append(f"Tipo de Geração {gen_type}")
+        xs.append([np.random.normal(gen_type + 1, 0.04) for i in range(len(data_element))])
+    
+    plt.boxplot(data,labels=names)
+    for x,y in zip(xs,data):
+        plt.scatter(x,y,alpha=0.4)  
+
+    #plt.axvline(avg, color='red', linestyle='dashed', linewidth=2, label='Media')
+    #plt.axvline(avg + std, color='green', linestyle='dashed', linewidth=2, label=f'Media + 1 std' )
+    #plt.axvline(avg - std, color='purple', linestyle='dashed', linewidth=2, label=f'Media - 1 std')
+
+    #plt.legend()
+    #axs.title(f'Dados com Media e Desvio padrão de {std:.2f}')
+    #axs.xlabel('Valor')
+    #axs.ylabel('Frequencia')
+    plt.show()
+
+def plot_convergence(elements):
+    arr1 = elements[0]
+    arr2 = elements[1]
+    arr3 = elements[2]
+
     # cria a figura
-    plt.style.use('seaborn-white')
+    # plt.style.use("seaborn-white")
     fig, ax = plt.subplots(figsize=(6, 4), dpi=100)
 
     # define o eixo x
     x_axis = [i for i in range(len(arr1))]
 
-    # formata o tamanho da fonte nos eixos
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
-    plt.ylabel("Valor da função objetivo", fontsize=16)
-    plt.xlabel("Gerações", fontsize=16)
+    ax.plot(
+        x_axis, arr1, marker="o", color="none", markeredgecolor="blue",linestyle="", markersize=3, alpha=0.5
+    )
+    ax.plot(
+        x_axis, arr2, marker="o", color="red", linestyle="", markersize=3, alpha=0.5
+    )
+    ax.plot(
+        x_axis, arr3, marker="s", color="green", linestyle="", markersize=3, alpha=0.5
+    )
+    legends = [
+        Patch(facecolor="blue", label="aleatório"),
+        Patch(facecolor="red", label="mapa logistico 1"),
+        Patch(facecolor="green", label="mapa logistico 2"),
+    ]
+    ax.legend(handles=legends)
+    #ax.text(13,12000,"media|media|media\ndesvio|desvio|desvio",fontsize=10)
+
+    plt.xticks(fontsize=10)
+    plt.yticks(fontsize=10)
+    
+    plt.title(f'Media dos valores por geração')
+    plt.ylabel("Valor da função objetivo", fontsize=10)
+    plt.xlabel("Gerações", fontsize=10)
+    #plt.xlim((-0.5, 24.5))
+    plt.show()
+    # plt.legend()
 
     # plota o gráfico
-    plt.plot(x_axis,arr1, marker='o', color='blue', linestyle='None')
-    plt.plot(x_axis,arr2, marker='o', color='blue', linestyle='None')
-    plt.plot(x_axis,arr3, marker='o', color='blue', linestyle='None')
-    plt.show()
 
-def get_data():
-    filepath = Path("algorithm_metrics/knapsack_problem_p.csv")
 
-    filepath.parent.mkdir(parents=True, exist_ok=True)
+def get_first_best_value(convergence_array):
+    convergence_array = list(convergence_array)
+    best_value = max(convergence_array)
+    index_best_value = convergence_array.index(best_value)
+    return best_value, index_best_value
 
-    results = pd.read_csv(filepath)
 
-    best_value_list = results["best_value"]
-    firstgen_with_best_value_list = results["firstgen_with_best_value"]
-    population_gen_type_list = results["population_gen_type"]
-    convergence_array_list = [i.replace("[","").replace("]", "").split(",") for i in results["convergence_array"]]
-    for element in convergence_array_list:
-        for count,value in enumerate(element):
-           element[count] = int(value) 
-    problem_number_list = results["problem_number"]
+def get_best_values_metrics(df: pd.DataFrame):
+    ammount_of_rows, ammount_of_columns = df.shape
+    best_values = []
 
-    return best_value_list,firstgen_with_best_value_list,population_gen_type_list,convergence_array_list,problem_number_list
+    for current_column_header in df.columns:
+        first_best_value, index_first_best_value = get_first_best_value(
+            df[current_column_header]
+        )
+        # print("best_value: ", first_best_value ,"index: ",index_first_best_value)
+        best_values.append(first_best_value)
+    #print(best_values)
 
-def analyse_results():
-    best_value_list,firstgen_with_best_value_list,population_gen_type_list,convergence_array_list,problem_number_list = get_data()
-    data = {
-        "total_best_values_per_p_type": [0,0,0],
-        "total_final_values_per_p_type": [0,0,0],
-        "average_b": [0,0,0],
-        "average_f": [0,0,0],
-        "firstgens_per_p_type": [0,0,0],
-        "num_variables": [0,0,0]
-    }
-    
-    problem_data = [data.copy() for i in range(100)]
-    
-    for count,element in enumerate(population_gen_type_list):
-        selected_problem = problem_data[problem_number_list[count]]
-        selected_problem["num_variables"][element] += 1
-        selected_problem["total_best_values_per_p_type"][element] += best_value_list[count]
-        selected_problem["total_final_values_per_p_type"][element] += convergence_array_list[count][-1]
-        selected_problem["firstgens_per_p_type"][element] += firstgen_with_best_value_list[count]
+    return np.mean(best_values), np.std(best_values), best_values
 
-    for dic_entry in problem_data:
-        dic_entry["average_b"][0] = dic_entry["total_best_values_per_p_type"][0]/dic_entry["num_variables"][0]  
-        dic_entry["average_b"][1] = dic_entry["total_best_values_per_p_type"][1]/dic_entry["num_variables"][1]  
-        dic_entry["average_b"][2] = dic_entry["total_best_values_per_p_type"][2]/dic_entry["num_variables"][2]  
 
-    arr1,arr2,arr3 = [],[],[]
-    for dic_entry in problem_data:
-        arr1.append(dic_entry["average_b"][0])
-        arr2.append(dic_entry["average_b"][1])
-        arr3.append(dic_entry["average_b"][2])
-    return arr1,arr2,arr3, problem_data
+def get_averages_per_generation(df: pd.DataFrame):
+    averages_per_generation = []
+    for row in df.iloc:
+        # print("avg: ", sum(row)/len(row), "sum: ", sum(row), "len: ", len(row))
+        avg = np.mean(row)
+        averages_per_generation.append(avg)
+    return averages_per_generation
 
-arr1,arr2,arr3,problem_data = analyse_results()
-print(problem_data[0])
-#plot_convergence(arr1,arr2,arr3)
+
+def get_data(current_test=0):
+    folder_path = "knapsack/tests/"
+    gen_type_path_list = listdir(Path(folder_path))
+
+    ammount_gen_types = len(gen_type_path_list)
+
+    averages, standard_deviations, best_values, averages_per_generation = [[0 for n in range(ammount_gen_types)] for i in range(4)]    
+    for current_gent_type_path in gen_type_path_list:
+        test_full_path = (
+            folder_path
+            + current_gent_type_path
+            + "/"
+            + "knapsack-instance_{current_test}.csv".format(current_test=current_test)
+        )
+        test_full_path = Path(test_full_path)
+        current_gen_data = file_name_parser(current_gent_type_path)
+        test_instance_df = pd.read_csv(test_full_path)
+        gen_type_num = current_gen_data["population-gen-type"]
+
+        (
+            averages[gen_type_num],
+            standard_deviations[gen_type_num],
+            best_values[gen_type_num],
+        ) = get_best_values_metrics(test_instance_df)
+        averages_per_generation[gen_type_num] = get_averages_per_generation(
+            test_instance_df
+        )
+
+    print(averages)
+    print(standard_deviations)
+    plot_boxblot(best_values)
+    plot_convergence(averages_per_generation)
+
+test_num = sys.argv[1]
+get_data(current_test=test_num)
