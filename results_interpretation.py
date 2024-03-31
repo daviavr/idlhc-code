@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 from pathlib import Path
 from os import listdir
-from common.helper import file_name_parser
+from benchmark.helper import file_name_parser
 import numpy as np
 import sys
 
