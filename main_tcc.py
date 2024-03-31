@@ -3,8 +3,53 @@ from benchmark.bench_algorithms import *
 from benchmark.problems import benchmark_picker
 import sys
 
-def gen_test_cases(
+def run_bench_instances(bench_instance_name: str, initial_population_type: int):
+    tests_path = bench_instance_name + "/tests"
+    bench_class, has_instances = benchmark_picker(bench_instance_name)
+    
+    if has_instances:        
+        instances_path = bench_instance_name + "/instances/"
+        benchmark_instances = listdir(Path(instances_path))
+        #benchmark_instances = ["num_0|size_100.csv"]
+
+        for current_instance in benchmark_instances:
+            current_instance_info = file_name_parser(current_instance) 
+            benchmark_instances_data = pd.read_csv(Path(instances_path + current_instance))
+
+            bench_instance = bench_class(benchmark_instances_data)
+            num_of_variables = current_instance_info["size"]
+            
+            iteration, problem, = run_test_cases(
+                                    initial_population_type=initial_population_type,
+                                    num_of_variables=num_of_variables,
+                                    bench_instance=bench_instance,
+                                  )
+            
+            capture_test_data(
+                iteration=iteration,
+                problem=problem,
+                instance_num=current_instance_info["num"],
+                choosen_path=bench_instance_name
+            )
+    else:
+        for current_size in bench_class.sizes_list:
+            
+            iteration, problem, = run_test_cases(
+                                    initial_population_type=initial_population_type,
+                                    num_of_variables=current_size
+                                  )
+            
+            capture_test_data(
+                iteration=iteration,
+                problem=problem,
+                instance_num=current_instance_info["num"],
+                choosen_path=bench_instance_name
+            )
+        pass
+
+def run_test_cases(
     initial_population_type=0,
+    num_of_variables=100,
     generations=100,
     num_of_individuals=100,
     direction="MAX",
@@ -12,54 +57,39 @@ def gen_test_cases(
     num_cut_pdf=0.1,
     bench_instance = None
 ):
-    instances_path = choosen_path + "/instances/"
-    tests_path = choosen_path + "/tests"
-    benchmark_instances = listdir(Path(instances_path))
-    #benchmark_instances = ["num_0|size_100.csv"]
 
-    for current_instance in benchmark_instances:
-        benchmark_instances_data = pd.read_csv(Path(instances_path + current_instance))
+    problem = Problem(
+        num_of_variables=num_of_variables,
+        num_of_individuals=num_of_individuals,
+        num_of_generations=generations,
+        objective=[bench_instance.bench],
+        repair=[bench_instance.repair],
+        mutation=(1 / num_of_variables),
+        variables_range=[0, 1],
+        direction=direction,
+        initial_population_type=initial_population_type,
+    )
 
-        current_instance_info = file_name_parser(current_instance)
+    iteration = IDLHC(problem, num_pdf=num_pdf, num_cut_pdf=num_cut_pdf)
+    iteration.do()
 
-        values = list(benchmark_instances_data["values"])
-        weights = list(benchmark_instances_data["weights"])
-
-        knapsack = UnconstrainedKnapsack(values, weights)
-
-        num_of_variables = current_instance_info["size"]
-
-        problem = Problem(
-            num_of_variables=num_of_variables,
-            num_of_individuals=num_of_individuals,
-            num_of_generations=generations,
-            objective=[lambda individual : sum(individual.features)],
-            repair=[lambda a : None],
-            mutation=(1 / num_of_variables),
-            variables_range=[0, 1],
-            direction=direction,
-            initial_population_type=initial_population_type,
-        )
-
-        iteration = IDLHC(problem, num_pdf=num_pdf, num_cut_pdf=num_cut_pdf)
-        iteration.do()
+    return iteration, problem
         
-        capture_test_data(
-            iteration=iteration,
-            problem=problem,
-            instance_num=current_instance_info["num"],
-            choosen_path=choosen_path)
+    
+ammount_of_runs = int(sys.argv[1])
+initial_population_type = int(sys.argv[2])
+bench_instance_name = sys.argv[3]
 
-num_runs = int(sys.argv[1])
-gen_type = int(sys.argv[2])
-choosen_path = sys.argv[3]
-
-bench_instance = benchmark_picker(choosen_path)
-
-for i in range(num_runs):
-    gen_test_cases(
-     bench_instance=bench_instance,
-     initial_population_type=gen_type,
-     choosen_path=choosen_path)
+for current_run in range(ammount_of_runs):
+    run_bench_instances(bench_instance_name=bench_instance_name,initial_population_type=initial_population_type)
+    #gen_test_cases(
+    #bench_instance=bench_instance,
+    #initial_population_type=gen_type,
+    #)
 
 print("done")
+#num_runs = int(sys.argv[1])
+#gen_type = int(sys.argv[2])
+#bench_instance_name = sys.argv[3]
+
+#get_bench_instances(bench_instance_name=bench_instance_name)
