@@ -105,3 +105,7 @@ class UnconstrainedKnapsack:
             else:
                 break
         return individual
+
+class MinMax:
+    def __init__():
+        pass
