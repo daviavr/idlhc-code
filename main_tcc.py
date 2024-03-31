@@ -69,7 +69,7 @@ def gen_test_cases(
     num_cut_pdf=0.1,
     choosen_path = "knapsack"
 ):
-    instances_path = "knapsack" + "/instances/"
+    instances_path = choosen_path + "/instances/"
     tests_path = choosen_path + "/tests"
     knapsack_instances = listdir(Path(instances_path))
     #knapsack_instances = ["num_0|size_100.csv"]
