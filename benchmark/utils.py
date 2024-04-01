@@ -1,6 +1,6 @@
 from common.problem import Problem
 from algorithm.idlhc import IDLHC
-#from bench_algorithms import *
+import benchmark.bench_algorithms as bench
 import random
 import pandas as pd
 from pathlib import Path
@@ -13,6 +13,19 @@ def file_name_parser(file_name):
         final_str = str_piece.split("_")
         final_dict[final_str[0]] = int(final_str[1])
     return final_dict
+
+def benchmark_picker(choosen_bench: str):
+    if choosen_bench == "KNAPSACK":
+        return bench.Knapsack, True
+    elif choosen_bench == "U_KNAPSACK":
+        return bench.UnconstrainedKnapsack, True
+    elif choosen_bench == "MINMAX":
+        return bench.MinMax, False
+    else:
+        raise Exception("Tipo não conhecido")
+
+def get_sizes_list(initial_size=100,step_size=100,num_steps=10):
+    return [(initial_size + (current_step * step_size)) for current_step in range(num_steps)]
 
 def save_df_to_path(path,df,prefix = None):
     try:

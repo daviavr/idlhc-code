@@ -67,7 +67,7 @@ class UnconstrainedKnapsack:
 
     def __init__(self, instance_data):
         self.values = self._get_values(instance_data)
-        self.capacity = self._get_capacity()
+        #self.capacity = self._get_capacity()
 
     def _get_values(self, instance_data):
         return instance_data["values"]
@@ -81,22 +81,23 @@ class UnconstrainedKnapsack:
         return sorted_ratio_indexes
 
     def bench(self, individual):
-        if len(individual.features) != len(self.values) or len(individual.features) != len(self.weights):
+        if len(individual.features) != len(self.values):
             return False
 
         total_value = 0
-        individual.total_weight = 0
+        #individual.total_weight = 0
 
         for count,value in enumerate(individual.features):
             if value != 0 and value != 1:
                 return False
             elif value == 1:
-                individual.total_weight += self.weights[count]
+                #individual.total_weight += self.weights[count]
                 total_value += self.values[count]
 
         return total_value
 
-    #def repair(self, individual):
+    def repair(self, individual):
+        return individual
         #if individual.total_weight <= self.capacity:
             #return individual
         #for count,value in enumerate(self.values):
@@ -115,5 +116,8 @@ class UnconstrainedKnapsack:
         #return individual
 
 class MinMax:
-    def __init__():
-        pass
+    def bench(individual):
+        return sum(individual.features)
+
+    def repair(individual):
+        return individual

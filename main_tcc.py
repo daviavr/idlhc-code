@@ -1,6 +1,5 @@
 from benchmark.utils import *
 from benchmark.bench_algorithms import *
-from benchmark.problems import benchmark_picker
 import sys
 
 def run_bench_instances(bench_instance_name: str, initial_population_type: int):
@@ -32,20 +31,19 @@ def run_bench_instances(bench_instance_name: str, initial_population_type: int):
                 choosen_path=bench_instance_name
             )
     else:
-        for current_size in bench_class.sizes_list:
-            
+        for index,current_size in enumerate(get_sizes_list()):
             iteration, problem, = run_test_cases(
                                     initial_population_type=initial_population_type,
-                                    num_of_variables=current_size
+                                    num_of_variables=current_size,
+                                    bench_instance=bench_class
                                   )
             
             capture_test_data(
                 iteration=iteration,
                 problem=problem,
-                instance_num=current_instance_info["num"],
+                instance_num=index,
                 choosen_path=bench_instance_name
             )
-        pass
 
 def run_test_cases(
     initial_population_type=0,
@@ -81,7 +79,10 @@ initial_population_type = int(sys.argv[2])
 bench_instance_name = sys.argv[3]
 
 for current_run in range(ammount_of_runs):
-    run_bench_instances(bench_instance_name=bench_instance_name,initial_population_type=initial_population_type)
+    run_bench_instances(
+        bench_instance_name=bench_instance_name,
+        initial_population_type=initial_population_type
+        )
     #gen_test_cases(
     #bench_instance=bench_instance,
     #initial_population_type=gen_type,
