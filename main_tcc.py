@@ -83,14 +83,5 @@ for current_run in range(ammount_of_runs):
         bench_instance_name=bench_instance_name,
         initial_population_type=initial_population_type
         )
-    #gen_test_cases(
-    #bench_instance=bench_instance,
-    #initial_population_type=gen_type,
-    #)
 
 print("done")
-#num_runs = int(sys.argv[1])
-#gen_type = int(sys.argv[2])
-#bench_instance_name = sys.argv[3]
-
-#get_bench_instances(bench_instance_name=bench_instance_name)
