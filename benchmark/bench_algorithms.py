@@ -35,7 +35,7 @@ class Knapsack:
         individual.total_weight = 0
 
         for count,value in enumerate(individual.features):
-            individual.total_weight += self.weights[count] * value
+            individual.total_weight += self.weights[count] 
             total_value += self.values[count] * value
 
         return total_value
