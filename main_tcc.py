@@ -63,7 +63,7 @@ def run_test_cases(
         objective=[bench_instance.bench],
         repair=[bench_instance.repair],
         mutation=(1 / num_of_variables),
-        variables_range=[0, 1],
+        variables_range=[0,1],
         direction=direction,
         initial_population_type=initial_population_type,
     )
