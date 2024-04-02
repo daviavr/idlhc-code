@@ -1,7 +1,8 @@
 from common.individual import Individual
-import random
 from common.population import Population
+from common.individual_generators import *
 from math import cos
+import random
 
 class Problem:
 
@@ -29,9 +30,6 @@ class Problem:
         self.variables = self.set_variables()
         self.mutation = mutation
         self.initial_population_type = initial_population_type
-
-        self.current_value = None
-        self.current_salt = random.random() * (10 ** -10)
         
     # Define quais possíveis variáveis do problema
     def set_variables(self):
@@ -52,38 +50,24 @@ class Problem:
 
     # Gera um indivíduo
     def generate_individual(self):
-        #salt = random.random() * (10 ** -10)
-        # print(salt)
-        salt = self.current_salt
         individual = Individual(self.direction)
-        if self.initial_population_type == 0:
-            def simpe_generation(self):
-                individual.features = [random.randint(min(self.variables_range), max(self.variables_range)) for x in range(self.num_of_variables)]
-                return individual
-            return simpe_generation(self)
-        
-        elif self.initial_population_type == 1:
-            def logistic_map_generation(self):
-                individual.features = [0.254561 if self.current_value == None else self.current_value]
-                r = 3.999999301 + salt
-                for n in range(self.num_of_variables-1):
-                    individual.features.append( r*individual.features[n]*(1-individual.features[n]) )
-                self.current_value = individual.features[-1]
-                individual.features = [0 if i < 0.5 else 1 for i in individual.features]
-                return individual
-            return logistic_map_generation(self)
-        
-        elif self.initial_population_type == 2:
-            def cosin_map_generation(self):
-                individual.features = [0.1 if self.current_value == None else self.current_value]
-                r = 6 + salt
-                for n in range(self.num_of_variables-1):
-                    individual.features.append( cos(r*individual.features[n]) )
-                self.current_value = individual.features[-1]
-                individual.features = [0 if i <= 0 else 1 for i in individual.features]
-                return individual
-            return cosin_map_generation(self)
 
+        chaos_map = ChaosMaps(self.variables_range,self.num_of_variables)
+        quasirandom_numbers = QuasiRandomNumberSequences(self.variables_range,self.num_of_variables)
+        beta_function = BetaFunctionVariatios(self.variables_range,self.num_of_variables)
+
+        if self.initial_population_type == 0:
+            individual.features = [random.randint(min(self.variables_range), max(self.variables_range)) for x in range(self.num_of_variables)]
+        elif self.initial_population_type == 1:
+            individual.features = chaos_map.generic_logistic_map()
+        elif self.initial_population_type == 2:
+            individual.features = chaos_map.cosin_map_generation()
+        elif self.initial_population_type == 3:
+            individual.features = beta_function.latin_hypercube()
+        elif self.initial_population_type == 4:
+            individual.features = beta_function.multinomial()
+        
+        return individual
 
     # Calcula o valor da função objetivo
     def calculate_objectives(self, individual):

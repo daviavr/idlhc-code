@@ -35,11 +35,8 @@ class Knapsack:
         individual.total_weight = 0
 
         for count,value in enumerate(individual.features):
-            if value != 0 and value != 1:
-                return False
-            elif value == 1:
-                individual.total_weight += self.weights[count]
-                total_value += self.values[count]
+            individual.total_weight += self.weights[count] 
+            total_value += self.values[count] * value
 
         return total_value
 
@@ -50,10 +47,10 @@ class Knapsack:
             if individual.total_weight > self.capacity:
                 sorted_ratio_indexes = self.get_sorted_ratio_indexes()
                 index = sorted_ratio_indexes[count]
-                if individual.features[index] == 1:
+                if individual.features[index] > 0:
                     individual.features[index] = 0
                     individual.total_weight -= self.weights[index]
-                    individual.objective -= self.values[index]
+                    individual.objective -= self.values[index] * individual.features[index]
             else:
                 break
         return individual
@@ -84,10 +81,7 @@ class UnconstrainedKnapsack:
         total_value = 0
 
         for count,value in enumerate(individual.features):
-            if value != 0 and value != 1:
-                return False
-            elif value == 1:
-                total_value += self.values[count]
+            total_value += self.values[count] * value
 
         return total_value
 
