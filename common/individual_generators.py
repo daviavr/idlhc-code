@@ -21,15 +21,14 @@ class ChaosMaps:
         
         if ChaosMaps.current_value == None:
             features = [0.254561]
-            for n in range(self.num_of_variables):
+            for n in range(8):
                 features.append(r * features[n] * (1-features[n]))
             features = [features[-1]]
         else:
             features = [ChaosMaps.current_value] 
         
-        for n in range(self.num_of_variables):
+        for n in range(self.num_of_variables-1):
             features.append( r*features[n]*(1-features[n]) )
-        del features[0]
 
         ChaosMaps.current_value = features[-1]
         features = [convert_01_to_range(self.floor,self.ceiling,i) for i in features]
@@ -40,15 +39,14 @@ class ChaosMaps:
         
         if ChaosMaps.current_value == None:
             features = [0.1]
-            for n in range(self.num_of_variables):
+            for n in range(8):
                 features.append( cos(r*features[n]) )
             features = [features[-1]]
         else:
             features = [ChaosMaps.current_value] 
         
-        for n in range(self.num_of_variables):
+        for n in range(self.num_of_variables-1):
             features.append( cos(r*features[n]) )
-        del features[0]
         
         ChaosMaps.current_value = features[-1]
         
