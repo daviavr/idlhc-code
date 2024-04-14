@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 from pathlib import Path
 from os import listdir
-from benchmark.helper import file_name_parser
+from benchmark.utils import file_name_parser
 import numpy as np
 import sys
 
@@ -101,8 +101,8 @@ def get_averages_per_generation(df: pd.DataFrame):
     return averages_per_generation
 
 
-def get_data(current_test=0):
-    folder_path = "knapsack/tests/"
+def get_data(current_test=0,path=""):
+    folder_path = path + "/tests/"
     gen_type_path_list = listdir(Path(folder_path))
 
     ammount_gen_types = len(gen_type_path_list)
@@ -113,7 +113,7 @@ def get_data(current_test=0):
             folder_path
             + current_gent_type_path
             + "/"
-            + "knapsack-instance_{current_test}.csv".format(current_test=current_test)
+            + path.lower()+"-instance_{current_test}.csv".format(current_test=current_test)
         )
         test_full_path = Path(test_full_path)
         current_gen_data = file_name_parser(current_gent_type_path)
@@ -135,4 +135,5 @@ def get_data(current_test=0):
     plot_convergence(averages_per_generation)
 
 test_num = sys.argv[1]
-get_data(current_test=test_num)
+path = sys.argv[2]
+get_data(current_test=test_num,path=path)

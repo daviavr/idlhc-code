@@ -11,7 +11,9 @@ class Knapsack:
     def __init__(self, instance_data):
         self.values = self._get_values(instance_data)
         self.weights = self._get_weights(instance_data)
+        self.size = len(self.values)
         self.capacity = self._get_capacity()
+        self.sorted_ratio_indexes = self._get_sorted_ratio_indexes()
 
     def _get_values(self, instance_data):
         return instance_data["values"]
@@ -22,7 +24,7 @@ class Knapsack:
     def _get_capacity(self):
         return math.ceil(0.5 * (sum(self.weights)))
 
-    def get_sorted_ratio_indexes(self):
+    def _get_sorted_ratio_indexes(self):
         ratios = [self.values[i] / self.weights[i] for i in range(len(self.values))]
         sorted_ratio_indexes = sorted(range(len(self.values)), key=lambda i: ratios[i])
         return sorted_ratio_indexes
@@ -34,19 +36,18 @@ class Knapsack:
         total_value = 0
         individual.total_weight = 0
 
-        for count,value in enumerate(individual.features):
-            individual.total_weight += self.weights[count] 
-            total_value += self.values[count] * value
+        for count in range(self.size):
+            if individual.features[count] > 0:
+                individual.total_weight += self.weights[count]
+                total_value += self.values[count] * individual.features[count]
 
         return total_value
 
     def repair(self, individual):
         if individual.total_weight <= self.capacity:
             return individual
-        for count,value in enumerate(self.values):
+        for index in self.sorted_ratio_indexes:
             if individual.total_weight > self.capacity:
-                sorted_ratio_indexes = self.get_sorted_ratio_indexes()
-                index = sorted_ratio_indexes[count]
                 if individual.features[index] > 0:
                     individual.features[index] = 0
                     individual.total_weight -= self.weights[index]

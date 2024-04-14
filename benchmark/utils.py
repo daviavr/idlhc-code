@@ -15,11 +15,12 @@ def file_name_parser(file_name):
     return final_dict
 
 def benchmark_picker(choosen_bench: str):
-    if choosen_bench == "KNAPSACK":
+    #return order: class type, has_test_instances
+    if choosen_bench == "KNAPSACK" or choosen_bench == "KNAPSACK-INT":
         return bench.Knapsack, True
-    elif choosen_bench == "U_KNAPSACK":
+    elif choosen_bench == "U-KNAPSACK" or choosen_bench == "U-KNAPSACK-INT":
         return bench.UnconstrainedKnapsack, True
-    elif choosen_bench == "MINMAX":
+    elif choosen_bench == "MINMAX" or choosen_bench == "MINMAX-INT":
         return bench.MinMax, False
     else:
         raise Exception("Tipo não conhecido")

@@ -53,8 +53,8 @@ class Problem:
         individual = Individual(self.direction)
 
         chaos_map = ChaosMaps(self.variables_range,self.num_of_variables)
-        quasirandom_numbers = QuasiRandomNumberSequences(self.variables_range,self.num_of_variables)
-        beta_function = BetaFunctionVariatios(self.variables_range,self.num_of_variables)
+        #quasirandom_numbers = QuasiRandomNumberSequences(self.variables_range,self.num_of_variables)
+        beta_function = BetaFunctionVariations(self.variables_range,self.num_of_variables)
 
         if self.initial_population_type == 0:
             individual.features = [random.randint(min(self.variables_range), max(self.variables_range)) for x in range(self.num_of_variables)]
@@ -65,7 +65,7 @@ class Problem:
         elif self.initial_population_type == 3:
             individual.features = beta_function.latin_hypercube()
         elif self.initial_population_type == 4:
-            individual.features = beta_function.multinomial()
+            individual.features = beta_function.binomial()
         
         return individual
 
