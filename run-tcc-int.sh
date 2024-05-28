@@ -1,7 +1,7 @@
 #!/bin/bash
 #transform the list of files into the array format
 
-allBenchs=("KNAPSACK-INT" "U-KNAPSACK-INT" "MINMAX-INt")
+allBenchs=("KNAPSACK-INT" "U-KNAPSACK-INT" "MINMAX-INT")
 numFuncs=4
 
 tmux new-session -d  -c "$HOME/idlhc-code" -s ${allBenchs[$1]}
