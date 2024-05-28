@@ -1,2 +1,1 @@
-__pycache__
-common/__pycache__
+*.pyc
