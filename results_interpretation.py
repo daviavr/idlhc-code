@@ -6,69 +6,79 @@ from os import listdir
 from benchmark.utils import file_name_parser
 import numpy as np
 import sys
+from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes 
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes 
+from mpl_toolkits.axes_grid1.inset_locator import mark_inset
+
+names, colors, alphas = ["Mersenne Twister", "Mapa Logístico", "Mapa Caótico do Coseno", "Latin Hypercube Sampling"],["red", "green", "blue", "yellow"], [1, 0.8, 0.6, 0.4]
 
 
 def plot_boxblot(data):
-    names, xs = [],[]
-    for gen_type, data_element in enumerate(data):
-        names.append(f"Tipo de Geração {gen_type}")
-        xs.append([np.random.normal(gen_type + 1, 0.04) for i in range(len(data_element))])
-    
-    plt.boxplot(data,labels=names)
-    for x,y in zip(xs,data):
-        plt.scatter(x,y,alpha=0.4)  
-
-    #plt.axvline(avg, color='red', linestyle='dashed', linewidth=2, label='Media')
-    #plt.axvline(avg + std, color='green', linestyle='dashed', linewidth=2, label=f'Media + 1 std' )
-    #plt.axvline(avg - std, color='purple', linestyle='dashed', linewidth=2, label=f'Media - 1 std')
-
-    #plt.legend()
-    #axs.title(f'Dados com Media e Desvio padrão de {std:.2f}')
-    #axs.xlabel('Valor')
-    #axs.ylabel('Frequencia')
+    plt.title(f'Boxplot dos valores')
+    bplot = plt.boxplot(data,labels=names,patch_artist=True)
+    for patch, color in zip(bplot['boxes'], colors):
+        patch.set_facecolor(color)
     plt.show()
 
-def plot_convergence(elements):
-    arr1 = elements[0]
-    arr2 = elements[1]
-    arr3 = elements[2]
-
-    # cria a figura
-    # plt.style.use("seaborn-white")
-    fig, ax = plt.subplots(figsize=(6, 4), dpi=100)
-
-    # define o eixo x
-    x_axis = [i for i in range(len(arr1))]
-
-    ax.plot(
-        x_axis, arr1, marker="o", color="none", markeredgecolor="blue",linestyle="", markersize=3, alpha=0.5
-    )
-    ax.plot(
-        x_axis, arr2, marker="o", color="red", linestyle="", markersize=3, alpha=0.5
-    )
-    ax.plot(
-        x_axis, arr3, marker="s", color="green", linestyle="", markersize=3, alpha=0.5
-    )
-    legends = [
-        Patch(facecolor="blue", label="aleatório"),
-        Patch(facecolor="red", label="mapa logistico 1"),
-        Patch(facecolor="green", label="mapa logistico 2"),
-    ]
-    ax.legend(handles=legends)
-    #ax.text(13,12000,"media|media|media\ndesvio|desvio|desvio",fontsize=10)
-
-    plt.xticks(fontsize=10)
-    plt.yticks(fontsize=10)
+def plot_convergence(data):
+    xs,legends = [],[]
+    for data_element in data:
+        xs.append([i for i in range(1,len(data_element)+1)])
     
+    x_min,x_max,y_min,y_max = 0,0,0,0
+    do_break = False
+    too_big_a_difference = False
+
+    for element in data:
+        for i in range(len(element)):
+            if element[i+1] - element[i] < 0.0001 * element[i]:
+                if i > x_max:
+                    x_max = i
+                    do_break = True
+                if element[i] > y_max:
+                    y_max = element[i]
+                    do_break = True
+                if do_break:
+                    break
+    x_min = x_max - 20 if x_max - 12 > 0 else 0
+    x_max = x_max + 10
+    y_min = y_max - (0.08 * y_max)
+    y_max = y_max + (0.01 * y_max)
+
+    biggest,smallest = max(data[0]),max(data[0])
+    for i in data:
+        if max(i) > biggest:
+            biggest = max(i)
+        if max(i) < smallest:
+            smallest = max(i)
+
+    if biggest - smallest > smallest * 0.1:
+        too_big_a_difference = True 
+
+    fig, ax = plt.subplots()
+    for x,y,color,name,alpha in zip(xs,data,colors,names,alphas):
+        legends.append(Patch(facecolor=color,label=name))
+        ax.scatter(x,y,alpha=alpha, label=name, color=color)  
+
     plt.title(f'Media dos valores por geração')
     plt.ylabel("Valor da função objetivo", fontsize=10)
     plt.xlabel("Gerações", fontsize=10)
-    #plt.xlim((-0.5, 24.5))
+    plt.legend(handles=legends,loc="lower right")
+
+    if not too_big_a_difference:
+        axins = zoomed_inset_axes(ax,2,loc="right",)  # adjust location and size as needed
+        #print("limites:", x_min, x_max, y_min, y_max)
+        axins.set_xlim(x_min, x_max)
+        axins.set_ylim(y_min, y_max)
+        plt.xticks(visible=False)
+        plt.yticks(visible=False)
+        for x, y, color, name, alpha in zip(xs, data, colors, names, alphas):
+            axins.scatter(x, y, alpha=alpha, color=color)
+
+        mark_inset(ax, axins, loc1=1, loc2=3, fc="none", ec="0.5")
+        plt.draw()
+    
     plt.show()
-    # plt.legend()
-
-    # plota o gráfico
-
 
 def get_first_best_value(convergence_array):
     convergence_array = list(convergence_array)
@@ -78,7 +88,6 @@ def get_first_best_value(convergence_array):
 
 
 def get_best_values_metrics(df: pd.DataFrame):
-    ammount_of_rows, ammount_of_columns = df.shape
     best_values = []
 
     for current_column_header in df.columns:
@@ -107,7 +116,7 @@ def get_data(current_test=0,path=""):
 
     ammount_gen_types = len(gen_type_path_list)
 
-    averages, standard_deviations, best_values, averages_per_generation = [[0 for n in range(ammount_gen_types)] for i in range(4)]    
+    averages, standard_deviations, best_values, averages_per_generation = [[0 for n in range(ammount_gen_types)] for i in range(len(names))] 
     for current_gent_type_path in gen_type_path_list:
         test_full_path = (
             folder_path
