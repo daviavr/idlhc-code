@@ -7,20 +7,27 @@ from benchmark.utils import file_name_parser
 import numpy as np
 import sys
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes 
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes 
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 
-names, colors, alphas = ["Mersenne Twister", "Mapa Logístico", "Mapa Caótico do Coseno", "Latin Hypercube Sampling"],["red", "green", "blue", "yellow"], [1, 0.8, 0.6, 0.4]
+names, colors, alphas = ["Mersenne Twister", "Mapa Logístico", "Mapa Caótico do Coseno", "Latin Hypercube Sampling"],["blue", "green", "orange", "red"], [1, 0.8, 0.6, 0.6]
 
+def create_directories_from_str(dir_as_str):
+    path = Path(dir_as_str)
+    path.parent.mkdir(parents=True, exist_ok=True)
 
-def plot_boxblot(data):
+def plot_boxblot(data,num,path):
     plt.title(f'Boxplot dos valores')
-    bplot = plt.boxplot(data,labels=names,patch_artist=True)
-    for patch, color in zip(bplot['boxes'], colors):
+    bplot = plt.boxplot(data,patch_artist=True)
+    legends = []
+    for patch, color, name in zip(bplot['boxes'], colors,names):
+        legends.append(Patch(facecolor=color,label=name))
         patch.set_facecolor(color)
-    plt.show()
+    plt.legend(handles=legends,bbox_to_anchor=(1.04, 1))
+    full_path = "/home/davi/figs/" + path 
+    create_directories_from_str(full_path)
+    plt.savefig(full_path + "_instance_" + str(num) + "_boxplot", bbox_inches="tight")
 
-def plot_convergence(data):
+def plot_convergence(data, num, path):
     xs,legends = [],[]
     for data_element in data:
         xs.append([i for i in range(1,len(data_element)+1)])
@@ -63,7 +70,7 @@ def plot_convergence(data):
     plt.title(f'Media dos valores por geração')
     plt.ylabel("Valor da função objetivo", fontsize=10)
     plt.xlabel("Gerações", fontsize=10)
-    plt.legend(handles=legends,loc="lower right")
+    plt.legend(handles=legends,bbox_to_anchor=(1.04, 1))
 
     if not too_big_a_difference:
         axins = zoomed_inset_axes(ax,2,loc="right",)  # adjust location and size as needed
@@ -78,7 +85,9 @@ def plot_convergence(data):
         mark_inset(ax, axins, loc1=1, loc2=3, fc="none", ec="0.5")
         plt.draw()
     
-    plt.show()
+    full_path = "/home/davi/figs/" + path 
+    create_directories_from_str(full_path)
+    plt.savefig(full_path + "_instance_" + str(num) + "_scatter", bbox_inches="tight")
 
 def get_first_best_value(convergence_array):
     convergence_array = list(convergence_array)
@@ -110,7 +119,7 @@ def get_averages_per_generation(df: pd.DataFrame):
     return averages_per_generation
 
 
-def get_data(current_test=0,path=""):
+def get_data(current_test=0,path="",prng_index=0):
     folder_path = path + "/tests/"
     gen_type_path_list = listdir(Path(folder_path))
 
@@ -138,11 +147,27 @@ def get_data(current_test=0,path=""):
             test_instance_df
         )
 
-    print(averages)
-    print(standard_deviations)
-    plot_boxblot(best_values)
-    plot_convergence(averages_per_generation)
+    #print(averages)
+    #print(standard_deviations)
+    final_best = []
+    for i in best_values:
+       final_best.append(max(i)) 
+    #print(final_best)
+    #plot_boxblot(best_values,current_test,path)
+    #plot_convergence(averages_per_generation,current_test,path)
+    final_str = (str(current_test) + " & " + str(final_best[prng_index]) + " & " + str(averages[prng_index]) + " & ", str(standard_deviations[prng_index]))
+    return final_str
 
 test_num = sys.argv[1]
 path = sys.argv[2]
-get_data(current_test=test_num,path=path)
+
+for n in range(len(names)):
+    final_string = "\\begin{table}[]\n\\begin{tabular}{l|l|l|l}\n\\hline\nInstância & Melhor Valor & Média & Desvio Padrão \\\\ \\hline\n"
+    for i in range(0,10):
+        result = get_data(current_test=i,path=path,prng_index=n)
+    final_string = final_string + result
+    final_string = final_string + "\\end{tabular}\n\\end{table}\n\n\n"
+    with open('out.txt', 'a') as output:
+        output.write(final_string)
+
+

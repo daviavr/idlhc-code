@@ -1,10 +1,8 @@
 from common.problem import Problem
 from algorithm.idlhc import IDLHC
 import benchmark.bench_algorithms as bench
-import random
 import pandas as pd
 from pathlib import Path
-from os import listdir
 
 def file_name_parser(file_name):
     final_dict = {}
