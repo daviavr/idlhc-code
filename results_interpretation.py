@@ -119,7 +119,7 @@ def get_averages_per_generation(df: pd.DataFrame):
     return averages_per_generation
 
 
-def get_data(current_test=0,path="",prng_index=0):
+def get_data(current_test=0,path=""):
     folder_path = path + "/tests/"
     gen_type_path_list = listdir(Path(folder_path))
 
@@ -147,27 +147,48 @@ def get_data(current_test=0,path="",prng_index=0):
             test_instance_df
         )
 
-    #print(averages)
-    #print(standard_deviations)
     final_best = []
     for i in best_values:
        final_best.append(max(i)) 
-    #print(final_best)
     #plot_boxblot(best_values,current_test,path)
     #plot_convergence(averages_per_generation,current_test,path)
-    final_str = (str(current_test) + " & " + str(final_best[prng_index]) + " & " + str(averages[prng_index]) + " & ", str(standard_deviations[prng_index]))
-    return final_str
+    return best_values, averages, final_best, standard_deviations
+
+
+def gen_full_table(path):
+    final_string = "\\begin{table}\n\\centering\n\\begin{tabular}{c|c|c|c|c}\n\\hline\nPRNG & Instância & Melhor Valor & Média & Desvio Padrão \\\\ \\hline\n"
+    for prng_index in range(len(names)):
+        final_string = final_string + " \\multirow{9}{*}{" + names[prng_index] + "}"
+        for current_test in range(9): 
+            best_values, averages, final_best, standard_deviations = get_data(current_test=current_test,path=path)
+            final_string = final_string + " & " + str(current_test + 1) + " & " + "\\textbf{" + str(final_best[prng_index]) + "}"  + " & " + "\\textbf{" + "{:.2f}".format(averages[prng_index]).replace('.',',') + "}" + " & " + "\\textbf{" + "{:.2f}".format(standard_deviations[prng_index]).replace('.',',') + "}" + " \\\\" + "\n"
+        final_string = final_string + "\\hline"
+    final_string = final_string + "\\hline\n"
+    final_string = final_string + "\\end{tabular}\n"
+    final_string = final_string + "\\caption{" + path + "}" + "\n"
+    final_string = final_string + "\\end{table}\n\n\n"
+    with open('fulltable.txt', 'w') as output:
+        output.write(final_string)
+
+def gen_per_instance_table(current_test,paths):
+    final_string = ""
+    for path in paths:
+        final_string = final_string + "\\begin{table}\n\\centering\n"
+        final_string = final_string + "\\caption{" + path + "}" + "\n"
+        final_string = final_string + "\\begin{tabular}{c|c|c|c|c}\n\\hline\nPRNG & Instância & Melhor Valor & Média & Desvio Padrão \\\\ \\hline\n"
+        for prng_index in range(len(names)):
+            best_values, averages, final_best, standard_deviations = get_data(current_test=current_test,path=path)
+            final_string = final_string + names[prng_index] + " & " + str(int(current_test) + 1) + " & " + str(final_best[prng_index]) + " & " + "{:.2f}".format(averages[prng_index]).replace('.',',') + " & " + "{:.2f}".format(standard_deviations[prng_index]).replace('.',',') + "\\\\" + "\n"
+        final_string = final_string + "\\hline\n"
+        final_string = final_string + "\\end{tabular}\n"
+        final_string = final_string + "\\end{table}\n\n\n"
+    with open('instance_table.txt', 'w') as output:
+        output.write(final_string)
+    
 
 test_num = sys.argv[1]
 path = sys.argv[2]
 
-for n in range(len(names)):
-    final_string = "\\begin{table}[]\n\\begin{tabular}{l|l|l|l}\n\\hline\nInstância & Melhor Valor & Média & Desvio Padrão \\\\ \\hline\n"
-    for i in range(0,10):
-        result = get_data(current_test=i,path=path,prng_index=n)
-    final_string = final_string + result
-    final_string = final_string + "\\end{tabular}\n\\end{table}\n\n\n"
-    with open('out.txt', 'a') as output:
-        output.write(final_string)
 
-
+gen_full_table(path=path)
+#gen_per_instance_table(current_test=test_num,paths=("MINMAX-INT","KNAPSACK-INT","U-KNAPSACK-INT"))
